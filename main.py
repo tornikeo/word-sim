@@ -1,6 +1,7 @@
 from sentence_transformers import SentenceTransformer, util
 import os
 from flask import Flask, jsonify, request
+import torch
 
 print('Loading model ...')
 model_path = "./model"
@@ -12,11 +13,17 @@ print('Done loading ... ready for inference')
 
 def new_cosine_similarity(source, target):
     #Compute embedding for both lists
-    embedding_1= model.encode(source, convert_to_tensor=True)
-    embedding_2 = model.encode(target, convert_to_tensor=True)
-    return util.pytorch_cos_sim(embedding_1, embedding_2).item()
+    with torch.no_grad():
+        embedding_1= model.encode(source, convert_to_tensor=True)
+        embedding_2 = model.encode(target, convert_to_tensor=True)
+        return util.pytorch_cos_sim(embedding_1, embedding_2).item()
 
 app = Flask(__name__)
+
+
+@app.route('/', methods=['GET'])
+def hello():
+    return "App is up and running!"
 
 @app.route('/predictions', methods=['POST'])
 def calculate_similarity():
