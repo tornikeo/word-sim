@@ -3,13 +3,19 @@ import os
 from flask import Flask, jsonify, request
 import torch
 
-print('Loading model ...')
-model_path = "./model"
-model = SentenceTransformer(
-    "sentence-transformers/distiluse-base-multilingual-cased-v2",
-    cache_folder=model_path
-)
-print('Done loading ... ready for inference')
+app = Flask(__name__)
+global model
+
+@app.before_first_request
+def init():
+    global model
+    print('Loading model ...')
+    model_path = "./model"
+    model = SentenceTransformer(
+        "sentence-transformers/distiluse-base-multilingual-cased-v2",
+        cache_folder=model_path
+    )
+    print('Done loading ... ready for inference')
 
 def new_cosine_similarity(source, target):
     #Compute embedding for both lists
@@ -17,9 +23,6 @@ def new_cosine_similarity(source, target):
         embedding_1= model.encode(source, convert_to_tensor=True)
         embedding_2 = model.encode(target, convert_to_tensor=True)
         return util.pytorch_cos_sim(embedding_1, embedding_2).item()
-
-app = Flask(__name__)
-
 
 @app.route('/', methods=['GET'])
 def hello():
