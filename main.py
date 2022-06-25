@@ -14,7 +14,6 @@
 
 # [START cloudrun_helloworld_service]
 # [START run_helloworld_service]
-from json import load
 import os
 from flask import Flask, jsonify, request
 import torch

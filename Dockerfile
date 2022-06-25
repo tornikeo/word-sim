@@ -26,11 +26,15 @@ ENV PYTHONUNBUFFERED True
 # Copy local code to the container image.
 ENV APP_HOME /app
 WORKDIR $APP_HOME
-COPY . ./
+
+COPY requirements.txt ./
 
 # Install production dependencies.
 RUN pip install --no-cache-dir -r requirements.txt
 
+COPY download_model.py ./
+RUN python download_model.py
+COPY . ./
 # Run the web service on container startup. Here we use the gunicorn
 # webserver, with one worker process and 8 threads.
 # For environments with multiple CPU cores, increase the number of workers

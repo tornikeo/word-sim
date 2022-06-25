@@ -16,7 +16,7 @@ import os
 
 import pytest
 
-import main
+from .. import main
 
 
 @pytest.fixture

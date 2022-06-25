@@ -1,5 +1,4 @@
 #!/bin/bash
-# docker build -t gcr.io/news-languages/word-sim:latest . 
 gcloud builds submit \
     --tag gcr.io/news-languages/word-sim \
     --machine-type=n1-highcpu-8
@@ -10,4 +9,3 @@ gcloud run deploy word-sim \
     --no-allow-unauthenticated \
     --region=us-east1 \
     --min-instances=1
-    # --port=8080 \

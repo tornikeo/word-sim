@@ -141,7 +141,6 @@ def service_url_auth_token(deployed_service):
 
     # no deletion needed
 
-
 def test_end_to_end(service_url_auth_token):
     service_url, auth_token = service_url_auth_token
 
