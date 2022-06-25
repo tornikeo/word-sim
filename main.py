@@ -1,24 +1,42 @@
-from sentence_transformers import SentenceTransformer, util
+# Copyright 2020 Google, LLC.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# [START cloudrun_helloworld_service]
+# [START run_helloworld_service]
+from json import load
 import os
 from flask import Flask, jsonify, request
 import torch
+from sentence_transformers import SentenceTransformer, util
+from functools import lru_cache
 
 app = Flask(__name__)
-global model
 
-@app.before_first_request
-def init():
-    global model
+@lru_cache(None)
+def load_model():
     print('Loading model ...')
-    model_path = "./model"
     model = SentenceTransformer(
         "sentence-transformers/distiluse-base-multilingual-cased-v2",
-        cache_folder=model_path
+        cache_folder='./model'
     )
     print('Done loading ... ready for inference')
+    return model
 
+@lru_cache(2000)
 def new_cosine_similarity(source, target):
     #Compute embedding for both lists
+    model = load_model()
     with torch.no_grad():
         embedding_1= model.encode(source, convert_to_tensor=True)
         embedding_2 = model.encode(target, convert_to_tensor=True)
@@ -32,18 +50,16 @@ def hello():
 def calculate_similarity():
     content = request.json
     print(f'Got request {content}')
-    api_key = content.get('api_key')
     source = content.get('source')
     target = content.get('target')
     if source is None or target is None:
         return jsonify(code=403, message="bad request: source or target is missing")
-    if  api_key != "FD0568E53F09CD0B8050B492B142F35A94DB7F4E241A217ACCC1B2B2A4FDB63B":
-        return jsonify(code=403, message="bad request: bad api_key")
     print('Doing inference ...')
     similarity = new_cosine_similarity(source, target)
     return jsonify({"status":"success", "prediction":similarity})
 
-if __name__ == '__main__':
-    # This is used when running locally only. When deploying to Google Cloud
-    # Run, a webserver process such as Gunicorn will serve the app.
-    app.run(debug=False, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
+
+if __name__ == "__main__":
+    app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
+# [END run_helloworld_service]
+# [END cloudrun_helloworld_service]
